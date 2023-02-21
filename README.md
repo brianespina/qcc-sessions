@@ -4,7 +4,7 @@ Shows QCC gym schedules
 
 # To do
 
-- [ ] setup express
+- [x] setup express
 - [ ] create database
 - [ ] connect databse
   - [ ] create table for sessions

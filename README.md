@@ -15,17 +15,17 @@ Shows QCC gym schedules
     - Type
     - Handler
     - Notes
-  - [ ] create table for users
+  - [x] create table for users
     - uname
     - password
     - Name
     - subscription
     - sessions
 - [ ] create routes for sessions
-  - [ ] adding sessions
+  - [x] adding sessions
   - [ ] editing sessions
   - [ ] deleting sessions
-  - [ ] getting sessions
+  - [x] getting sessions
   - [ ] getting single sessions
 - [ ] create routes for users
   - add users

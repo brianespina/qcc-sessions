@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const pool = require("./db");
 const app = express();
 const port = 3000;
 
@@ -11,7 +12,12 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.json({ info: "Hello world" });
+  pool.query("SELECT * FROM sessions", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(results.rows);
+  });
 });
 
 app.listen(port, () => {

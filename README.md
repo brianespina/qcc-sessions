@@ -5,9 +5,9 @@ Shows QCC gym schedules
 # To do
 
 - [x] setup express
-- [ ] create database
-- [ ] connect databse
-  - [ ] create table for sessions
+- [x] create database
+- [x] connect databse
+  - [x] create table for sessions
     - Title
     - Date
     - Attendees
@@ -15,17 +15,17 @@ Shows QCC gym schedules
     - Type
     - Handler
     - Notes
-  - [ ] create table for users
+  - [x] create table for users
     - uname
     - password
     - Name
     - subscription
     - sessions
 - [ ] create routes for sessions
-  - [ ] adding sessions
+  - [x] adding sessions
   - [ ] editing sessions
   - [ ] deleting sessions
-  - [ ] getting sessions
+  - [x] getting sessions
   - [ ] getting single sessions
 - [ ] create routes for users
   - add users

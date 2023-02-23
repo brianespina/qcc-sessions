@@ -33,6 +33,19 @@ app.post("/api/v1/sessions", (req, res) => {
   );
 });
 
+//DELETE Session by Id
+
+app.delete("/api/v1/sessions/:id", (req, res) => {
+  const { id } = req.params;
+  pool.query(`DELETE FROM sessions WHERE id = '${id}'`, (error, results) => {
+    if (error) {
+      throw error;
+    }
+
+    res.json("Session deleted");
+  });
+});
+
 app.listen(port, () => {
   console.log(`listening on port ${3000}`);
 });

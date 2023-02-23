@@ -24,7 +24,7 @@ Shows QCC gym schedules
 - [ ] create routes for sessions
   - [x] adding sessions
   - [ ] editing sessions
-  - [ ] deleting sessions
+  - [x] deleting sessions
   - [x] getting sessions
   - [ ] getting single sessions
 - [ ] create routes for users

@@ -21,12 +21,12 @@ Shows QCC gym schedules
     - Name
     - subscription
     - sessions
-- [ ] create routes for sessions
+- [x] create routes for sessions
   - [x] adding sessions
   - [x] editing sessions
   - [x] deleting sessions
   - [x] getting sessions
-  - [ ] getting single sessions
+  - [x] getting single sessions
 - [ ] create routes for users
   - add users
     - [ ] by admin

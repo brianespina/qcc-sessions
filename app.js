@@ -62,6 +62,17 @@ app.put("/api/v1/sessions/:id", (req, res) => {
   );
 });
 
+//Get single session
+app.get("/api/v1/sessions/:id", (req, res) => {
+  const { id } = req.params;
+  pool.query(`SELECT * FROM sessions WHERE id=${id}`, (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.json(results.rows);
+  });
+});
+
 app.listen(port, () => {
   console.log(`listening on port ${3000}`);
 });

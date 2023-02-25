@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const pool = require("./db");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(
@@ -74,5 +74,5 @@ app.get("/api/v1/sessions/:id", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`listening on port ${3000}`);
+  console.log(`listening on port ${port}`);
 });

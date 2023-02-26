@@ -15,7 +15,7 @@ app.use(
 
 // GET all Sessions
 app.get("/api/v1/sessions", (req, res) => {
-  pool.query("SELECT * FROM sessions ORDER BY date", (error, results) => {
+  pool.query("SELECT * FROM sessions ORDER BY date DESC", (error, results) => {
     res.json(results.rows);
   });
 });

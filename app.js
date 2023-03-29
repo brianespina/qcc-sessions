@@ -32,6 +32,16 @@ app.get("/api/v1/sessions-current", (req, res) => {
   );
 });
 
+// GET all Sessions Current
+app.get("/api/v1/sessions-archive", (req, res) => {
+  pool.query(
+    "SELECT * FROM sessions WHERE status = 'archive' ORDER BY date ASC",
+    (error, results) => {
+      res.json(results.rows);
+    }
+  );
+});
+
 //POST add session
 app.post("/api/v1/sessions", (req, res) => {
   const { title, date, attendees, status, type, handler, notes } = req.body;

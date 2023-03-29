@@ -4,6 +4,7 @@ const pool = require("./db");
 const app = express();
 const cors = require("cors");
 const cron = require("node-cron");
+const axios = require("axios");
 const port = 3000;
 
 app.use(cors());
@@ -85,6 +86,27 @@ app.get("/api/v1/sessions/:id", (req, res) => {
     }
     res.json(results.rows);
   });
+});
+
+//Expire  Session
+app.put("/api/v1/expire/sessions", (req, res) => {
+  pool.query(
+    `UPDATE sessions SET status='archive' WHERE date < now()`,
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      res.json(results.rows);
+    }
+  );
+});
+
+//CRON Schedules
+
+//Expire Session
+
+cron.schedule("*/15 * * * *", () => {
+  axios.put("http://localhost:3000/api/v1/expire/sessions");
 });
 
 app.listen(port, () => {

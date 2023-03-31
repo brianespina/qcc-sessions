@@ -25,7 +25,7 @@ app.get("/api/v1/sessions", (req, res) => {
 // GET all Sessions Current
 app.get("/api/v1/sessions-current", (req, res) => {
   pool.query(
-    "SELECT * FROM sessions WHERE date > now() AND status != 'archive' ORDER BY date ASC",
+    "SELECT * FROM sessions WHERE date >= now() AND status != 'archive' ORDER BY date ASC",
     (error, results) => {
       res.json(results.rows);
     }

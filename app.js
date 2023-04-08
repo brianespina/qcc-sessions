@@ -32,6 +32,19 @@ app.get("/api/v1/sessions-current", (req, res) => {
 });
 
 // GET all Sessions Current
+app.get("/api/v1/attendees/:session_id", (req, res) => {
+  const { session_id } = req.params;
+  pool.query(
+    `SELECT members.first_name FROM session_attendees 
+    LEFT JOIN members ON session_attendees.member_id = members.id 
+    WHERE session_id = ${session_id}`,
+    (error, results) => {
+      res.json(results.rows);
+    }
+  );
+});
+
+// GET all Sessions Current
 app.get("/api/v1/sessions-archive", (req, res) => {
   pool.query(
     "SELECT * FROM sessions WHERE status = 'archive' ORDER BY date ASC",

@@ -44,7 +44,7 @@ ON session_attendees.member_id = members.id
 WHERE session_id = 88;
 
 INSERT INTO session_attendees (session_id, member_id) 
-VALUES (88, 1),(88, 2),(88, 3);
+VALUES (90, 1),(90, 2),(90, 3);
 
 INSERT INTO members (name, first_name, last_name, join_date, status, membership_expire) 
 VALUES ('Brian Espina', 'Brian', 'Espina', '2022-11-11 13:23:44', 'monthly', '2023-11-11 13:23:44') RETURNING *;

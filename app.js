@@ -37,8 +37,8 @@ const typeDefs = `
   }
 
   type Query {
-    sessions: [Session],
-    members: [Member]
+    sessions(status: String): [Session],
+    members: [Member],
   }
 
 `;
@@ -80,11 +80,18 @@ const resolvers = {
     },
   },
   Query: {
-    sessions: async () => {
+    sessions: async (parent, args, contextValue, info) => {
+      const { status } = args;
+
       try {
         const result = await pool.query(
-          "SELECT * FROM sessions ORDER BY date ASC"
+          `SELECT * FROM sessions ORDER BY date ASC`
         );
+
+        if (status) {
+          return result.rows.filter((session) => session.status === status);
+        }
+
         return result.rows;
       } catch (error) {}
     },
@@ -107,8 +114,12 @@ const server = new ApolloServer({
 await server.start();
 
 app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+  })
+);
+app.use(
   "/graphql",
-  cors(),
   bodyParser.json(),
   bodyParser.urlencoded({
     extended: true,
@@ -125,100 +136,100 @@ app.use(
 // );
 
 // GET all Sessions
-app.get("/api/v1/sessions", (req, res) => {
-  pool.query("SELECT * FROM sessions ORDER BY date ASC", (error, results) => {
-    res.json(results.rows);
-  });
-});
+// app.get("/api/v1/sessions", (req, res) => {
+//   pool.query("SELECT * FROM sessions ORDER BY date ASC", (error, results) => {
+//     res.json(results.rows);
+//   });
+// });
 
-// GET all Sessions Current
-app.get("/api/v1/sessions-current", (req, res) => {
-  pool.query(
-    "SELECT * FROM sessions WHERE date >= now() AND status != 'archive' ORDER BY date ASC",
-    (error, results) => {
-      res.json(results.rows);
-    }
-  );
-});
+// // GET all Sessions Current
+// app.get("/api/v1/sessions-current", (req, res) => {
+//   pool.query(
+//     "SELECT * FROM sessions WHERE date >= now() AND status != 'archive' ORDER BY date ASC",
+//     (error, results) => {
+//       res.json(results.rows);
+//     }
+//   );
+// });
 
-// GET all Sessions Current
-app.get("/api/v1/attendees/:session_id", (req, res) => {
-  const { session_id } = req.params;
-  pool.query(
-    `SELECT members.first_name FROM session_attendees 
-    LEFT JOIN members ON session_attendees.member_id = members.id 
-    WHERE session_id = ${session_id}`,
-    (error, results) => {
-      res.json(results.rows);
-    }
-  );
-});
+// // GET all Sessions Current
+// app.get("/api/v1/attendees/:session_id", (req, res) => {
+//   const { session_id } = req.params;
+//   pool.query(
+//     `SELECT members.first_name FROM session_attendees
+//     LEFT JOIN members ON session_attendees.member_id = members.id
+//     WHERE session_id = ${session_id}`,
+//     (error, results) => {
+//       res.json(results.rows);
+//     }
+//   );
+// });
 
-// GET all Sessions Current
-app.get("/api/v1/sessions-archive", (req, res) => {
-  pool.query(
-    "SELECT * FROM sessions WHERE status = 'archive' ORDER BY date ASC",
-    (error, results) => {
-      res.json(results.rows);
-    }
-  );
-});
+// // GET all Sessions Current
+// app.get("/api/v1/sessions-archive", (req, res) => {
+//   pool.query(
+//     "SELECT * FROM sessions WHERE status = 'archive' ORDER BY date ASC",
+//     (error, results) => {
+//       res.json(results.rows);
+//     }
+//   );
+// });
 
-//POST add session
-app.post("/api/v1/sessions", (req, res) => {
-  const { title, date, status, type, handler, notes } = req.body;
+// //POST add session
+// app.post("/api/v1/sessions", (req, res) => {
+//   const { title, date, status, type, handler, notes } = req.body;
 
-  pool.query(
-    "INSERT INTO sessions (title, date, status, type, handler, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-    [title, date, status, type, handler, notes],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      res.json(results.rows);
-    }
-  );
-});
+//   pool.query(
+//     "INSERT INTO sessions (title, date, status, type, handler, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+//     [title, date, status, type, handler, notes],
+//     (error, results) => {
+//       if (error) {
+//         throw error;
+//       }
+//       res.json(results.rows);
+//     }
+//   );
+// });
 
-//DELETE Session by Id
+// //DELETE Session by Id
 
-app.delete("/api/v1/sessions/:id", (req, res) => {
-  const { id } = req.params;
-  pool.query(`DELETE FROM sessions WHERE id = '${id}'`, (error, results) => {
-    if (error) {
-      throw error;
-    }
+// app.delete("/api/v1/sessions/:id", (req, res) => {
+//   const { id } = req.params;
+//   pool.query(`DELETE FROM sessions WHERE id = '${id}'`, (error, results) => {
+//     if (error) {
+//       throw error;
+//     }
 
-    res.json("Session deleted");
-  });
-});
+//     res.json("Session deleted");
+//   });
+// });
 
-//Edit  Session
-app.put("/api/v1/sessions/:id", (req, res) => {
-  const { id } = req.params;
-  const { title, date, status, type, handler, notes } = req.body;
-  pool.query(
-    `UPDATE sessions SET title=$1, date=$2, status=$3, type=$4, handler=$5, notes=$6 WHERE id=${id} RETURNING *`,
-    [title, date, status, type, handler, notes],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      res.json(results.rows);
-    }
-  );
-});
+// //Edit  Session
+// app.put("/api/v1/sessions/:id", (req, res) => {
+//   const { id } = req.params;
+//   const { title, date, status, type, handler, notes } = req.body;
+//   pool.query(
+//     `UPDATE sessions SET title=$1, date=$2, status=$3, type=$4, handler=$5, notes=$6 WHERE id=${id} RETURNING *`,
+//     [title, date, status, type, handler, notes],
+//     (error, results) => {
+//       if (error) {
+//         throw error;
+//       }
+//       res.json(results.rows);
+//     }
+//   );
+// });
 
-//Get single session
-app.get("/api/v1/sessions/:id", (req, res) => {
-  const { id } = req.params;
-  pool.query(`SELECT * FROM sessions WHERE id=${id}`, (error, results) => {
-    if (error) {
-      throw error;
-    }
-    res.json(results.rows);
-  });
-});
+// //Get single session
+// app.get("/api/v1/sessions/:id", (req, res) => {
+//   const { id } = req.params;
+//   pool.query(`SELECT * FROM sessions WHERE id=${id}`, (error, results) => {
+//     if (error) {
+//       throw error;
+//     }
+//     res.json(results.rows);
+//   });
+// });
 
 //Expire  Session
 function expireSessions() {

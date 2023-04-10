@@ -38,7 +38,12 @@ const typeDefs = `
 
   type Query {
     sessions(status: String): [Session],
+    session(id: ID!): Session, 
     members: [Member],
+  }
+
+  type Mutation{
+    deleteSession(id: ID!): Boolean
   }
 
 `;
@@ -88,11 +93,20 @@ const resolvers = {
           `SELECT * FROM sessions ORDER BY date ASC`
         );
 
-        if (status) {
-          return result.rows.filter((session) => session.status === status);
+        if (!status || status === "all") {
+          return result.rows;
         }
 
-        return result.rows;
+        return result.rows.filter((session) => session.status === status);
+      } catch (error) {}
+    },
+    session: async (parent, args) => {
+      const { id } = args;
+      try {
+        const result = await pool.query(
+          `SELECT * FROM sessions WHERE id = ${id}`
+        );
+        return result.rows[0];
       } catch (error) {}
     },
     members: async () => {
@@ -100,6 +114,14 @@ const resolvers = {
         const result = await pool.query("SELECT * FROM members");
         return result.rows;
       } catch (error) {}
+    },
+  },
+  Mutation: {
+    deleteSession: async (parent, args) => {
+      const { id } = args;
+      const deletedSession = await pool.query(
+        `DELETE FROM sessions WHERE id = ${id}`
+      );
     },
   },
   DateTime: GraphQLDateTime,

@@ -10,6 +10,9 @@ CREATE TABLE sessions(
     notes VARCHAR(500)
 );
 
+ALTER TABLE table_name
+ADD COLUMN attendees integer[];
+
 ALTER TABLE sessions ADD FOREIGN KEY (attendees) REFERENCES session_attendees(id)
 
 CREATE TABLE session_attendees(
@@ -52,8 +55,11 @@ VALUES ('Brian Espina', 'Brian', 'Espina', '2022-11-11 13:23:44', 'monthly', '20
 INSERT INTO members (name, first_name, last_name, join_date, status, membership_expire) 
 VALUES ('JR Jimenez', 'JR', 'Jimenez', '2022-11-11 13:23:44', 'monthly', '2023-11-11 13:23:44') RETURNING *;
 
-INSERT INTO members (name, first_name, last_name, join_date, status, membership_expire) 
-VALUES ('Kian Angay', 'Kian', 'Angay', '2022-11-11 13:23:44', 'monthly', '2023-11-11 13:23:44') RETURNING *;
+INSERT INTO members (name, first_name, last_name, join_date, status, membership_expire, sessions) 
+VALUES ('Share Espina', 'Share', 'Espina', '2022-11-11 13:23:44', 'monthly', '2023-11-11 13:23:44', ARRAY[90, 83, 88]) RETURNING *;
+
+INSERT INTO sessions (title, date, status, type, handler, notes, attendees) 
+VALUES ('test 1', '2022-11-11 13:23:44','active', 'training', 1 ,'test note',  ARRAY [1, 2, 3]) RETURNING *;
 
 
 INSERT INTO session_attendees (member_id, session_id) 

@@ -1,20 +1,128 @@
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import pool from "./db.js";
 import cron from "node-cron";
+import gqldate from "graphql-iso-date";
 
+const { GraphQLDateTime } = gqldate;
 const port = 3000;
 
-const app = express();
+const typeDefs = `
 
-app.use(cors());
-app.use(bodyParser.json());
+  scalar DateTime
+
+  type Session{
+    id: ID!,
+    title: String!,
+    date: DateTime!,
+    status: String!,
+    type: String!,
+    handler: Member!,
+    notes: String!,
+    attendees: [Member]
+  }
+
+  type Member{
+    id: ID!,
+    name: String!,
+    first_name: String!,
+    last_name: String!,
+    join_date: DateTime!,
+    status: String!,
+    membership_expire: DateTime!,
+    attended: [Session]
+  }
+
+  type Query {
+    sessions: [Session],
+    members: [Member]
+  }
+
+`;
+const resolvers = {
+  Session: {
+    async attendees(session) {
+      try {
+        if (session.attendees) {
+          const sessionMembers = await pool.query(
+            `SELECT * FROM members WHERE id IN (${session.attendees.join(",")})`
+          );
+
+          return sessionMembers.rows;
+        }
+      } catch (error) {}
+    },
+    async handler(session) {
+      try {
+        if (session.handler) {
+          const sessionHandler = await pool.query(
+            `SELECT * FROM members WHERE id = ${session.handler}`
+          );
+          console.log(sessionHandler.rows[0]);
+          return sessionHandler.rows[0];
+        }
+      } catch (error) {}
+    },
+  },
+  Member: {
+    async attended(member) {
+      try {
+        if (member.sessions) {
+          const memberSessions = await pool.query(
+            `SELECT * FROM sessions WHERE id IN (${member.sessions.join(",")})`
+          );
+          return memberSessions.rows;
+        }
+      } catch (error) {}
+    },
+  },
+  Query: {
+    sessions: async () => {
+      try {
+        const result = await pool.query(
+          "SELECT * FROM sessions ORDER BY date ASC"
+        );
+        return result.rows;
+      } catch (error) {}
+    },
+    members: async () => {
+      try {
+        const result = await pool.query("SELECT * FROM members");
+        return result.rows;
+      } catch (error) {}
+    },
+  },
+  DateTime: GraphQLDateTime,
+};
+
+const app = express();
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+
 app.use(
+  "/graphql",
+  cors(),
+  bodyParser.json(),
   bodyParser.urlencoded({
     extended: true,
-  })
+  }),
+  expressMiddleware(server)
 );
+
+// app.use(cors());
+// app.use(bodyParser.json());
+// app.use(
+//   bodyParser.urlencoded({
+//     extended: true,
+//   })
+// );
 
 // GET all Sessions
 app.get("/api/v1/sessions", (req, res) => {

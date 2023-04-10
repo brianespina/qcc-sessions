@@ -1,10 +1,12 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const pool = require("./db");
-const app = express();
-const cors = require("cors");
-const cron = require("node-cron");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import pool from "./db.js";
+import cron from "node-cron";
+
 const port = 3000;
+
+const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -56,11 +58,11 @@ app.get("/api/v1/sessions-archive", (req, res) => {
 
 //POST add session
 app.post("/api/v1/sessions", (req, res) => {
-  const { title, date, attendees, status, type, handler, notes } = req.body;
+  const { title, date, status, type, handler, notes } = req.body;
 
   pool.query(
-    "INSERT INTO sessions (title, date, attendees, status, type, handler, notes) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-    [title, date, JSON.stringify(attendees), status, type, handler, notes],
+    "INSERT INTO sessions (title, date, status, type, handler, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+    [title, date, status, type, handler, notes],
     (error, results) => {
       if (error) {
         throw error;
@@ -86,10 +88,10 @@ app.delete("/api/v1/sessions/:id", (req, res) => {
 //Edit  Session
 app.put("/api/v1/sessions/:id", (req, res) => {
   const { id } = req.params;
-  const { title, date, attendees, status, type, handler, notes } = req.body;
+  const { title, date, status, type, handler, notes } = req.body;
   pool.query(
-    `UPDATE sessions SET title=$1, date=$2, attendees=$3, status=$4, type=$5, handler=$6, notes=$7 WHERE id=${id} RETURNING *`,
-    [title, date, JSON.stringify(attendees), status, type, handler, notes],
+    `UPDATE sessions SET title=$1, date=$2, status=$3, type=$4, handler=$5, notes=$6 WHERE id=${id} RETURNING *`,
+    [title, date, status, type, handler, notes],
     (error, results) => {
       if (error) {
         throw error;

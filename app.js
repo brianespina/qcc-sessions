@@ -11,41 +11,51 @@ const { GraphQLDateTime } = gqldate;
 const port = 3000;
 
 const typeDefs = `
-
   scalar DateTime
 
-  type Session{
-    id: ID!,
-    title: String!,
-    date: DateTime!,
-    status: String!,
-    type: String!,
-    handler: Member!,
-    notes: String!,
+  type Session {
+    id: ID!
+    title: String!
+    date: DateTime!
+    status: String!
+    type: String!
+    handler: Member!
+    notes: String!
     attendees: [Member]
   }
 
-  type Member{
-    id: ID!,
-    name: String!,
-    first_name: String!,
-    last_name: String!,
-    join_date: DateTime!,
-    status: String!,
-    membership_expire: DateTime!,
+  type Member {
+    id: ID!
+    name: String!
+    first_name: String!
+    last_name: String!
+    join_date: DateTime!
+    status: String!
+    membership_expire: DateTime!
     attended: [Session]
   }
 
   type Query {
-    sessions(status: String): [Session],
-    session(id: ID!): Session, 
-    members: [Member],
+    sessions(status: String): [Session]
+    session(id: ID!): Session
+    members: [Member]
   }
 
-  type Mutation{
+  input SessionInput{
+    id: ID!
+    title: String!
+    date: String!
+    status: String!
+    type: String!
+    handler: Int!
+    notes: String!
+    attendees: [Int]
+  }
+
+  type Mutation {
     deleteSession(id: ID!): Boolean
+    updateSession(session: SessionInput!): Boolean
   }
-
 `;
 const resolvers = {
   Session: {
@@ -121,6 +131,14 @@ const resolvers = {
       const { id } = args;
       const deletedSession = await pool.query(
         `DELETE FROM sessions WHERE id = ${id}`
+      );
+    },
+
+    updateSession: async (parent, args) => {
+      const { session } = args;
+
+      const updateSession = await pool.query(
+        `UPDATE sessions SET title='${session.title}', date='${session.date}', status='${session.status}', type='${session.type}', handler=${session.handler}, notes='${session.notes}' WHERE id='${session.id}'`
       );
     },
   },

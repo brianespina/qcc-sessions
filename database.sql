@@ -13,13 +13,9 @@ CREATE TABLE sessions(
 ALTER TABLE table_name
 ADD COLUMN attendees integer[];
 
-ALTER TABLE sessions ADD FOREIGN KEY (attendees) REFERENCES session_attendees(id)
+SELECT session FROM session_attendees WHERE 1 = ANY(members);
 
-CREATE TABLE session_attendees(
-    session_id INT REFERENCES sessions(id) ON UPDATE CASCADE,   
-    member_id INT REFERENCES members(id) ON UPDATE CASCADE,
-    CONSTRAINT session_member_pkey PRIMARY KEY (session_id, member_id)
-);
+ALTER TABLE sessions ADD FOREIGN KEY (attendees) REFERENCES session_attendees(id)
 
 CREATE TABLE members(
     id SERIAL PRIMARY KEY,
@@ -30,6 +26,14 @@ CREATE TABLE members(
     status VARCHAR(255) NOT NULL,
     membership_expire TIMESTAMP NOT NULL
 );
+
+CREATE TABLE session_attendees(
+    session INT NOT NULL,
+    members integer[]
+);
+
+INSERT INTO session_attendees (session, members) 
+VALUES (88, ARRAY[1,2,3]) RETURNING *;
 
 CREATE TABLE users(
     id SERIAL PRIMARY KEY ,

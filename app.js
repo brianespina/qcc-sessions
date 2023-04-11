@@ -19,9 +19,14 @@ const typeDefs = `
     date: DateTime!
     status: String!
     type: String!
-    handler: Member!
+    handler: Member
     notes: String!
-    attendees: [Member]
+    attendees: [SessionMembers]
+  }
+
+  type SessionMembers {
+    session: Session
+    members: [Member]
   }
 
   type Member {
@@ -32,13 +37,14 @@ const typeDefs = `
     join_date: DateTime!
     status: String!
     membership_expire: DateTime!
-    attended: [Session]
+    attended: [SessionMembers]
   }
 
   type Query {
     sessions(status: String): [Session]
     session(id: ID!): Session
     members: [Member]
+    session_members: [SessionMembers]
   }
 
   input SessionInput{
@@ -47,7 +53,7 @@ const typeDefs = `
     date: String!
     status: String!
     type: String!
-    handler: Int!
+    handler: Int
     notes: String!
     attendees: [Int]
   }
@@ -63,9 +69,8 @@ const resolvers = {
       try {
         if (session.attendees) {
           const sessionMembers = await pool.query(
-            `SELECT * FROM members WHERE id IN (${session.attendees.join(",")})`
+            `SELECT * FROM session_attendees WHERE session = ${session.id}`
           );
-
           return sessionMembers.rows;
         }
       } catch (error) {}
@@ -82,15 +87,30 @@ const resolvers = {
       } catch (error) {}
     },
   },
+  SessionMembers: {
+    async members(session_member) {
+      const membersResult = await pool.query(`
+          SELECT * FROM members WHERE id IN (${session_member.members.join(
+            ","
+          )})
+        `);
+      return membersResult.rows;
+    },
+    async session(session_member) {
+      const session = await pool.query(`
+        SELECT * FROM sessions WHERE id = ${session_member}
+      `);
+      console.log(session);
+      return session.rows[0];
+    },
+  },
   Member: {
     async attended(member) {
       try {
-        if (member.sessions) {
-          const memberSessions = await pool.query(
-            `SELECT * FROM sessions WHERE id IN (${member.sessions.join(",")})`
-          );
-          return memberSessions.rows;
-        }
+        const memberSessions = await pool.query(
+          `SELECT session FROM session_attendees WHERE ${member.id} = ANY(members)`
+        );
+        return memberSessions.rows.map((session) => session.session);
       } catch (error) {}
     },
   },
@@ -138,7 +158,13 @@ const resolvers = {
       const { session } = args;
 
       const updateSession = await pool.query(
-        `UPDATE sessions SET title='${session.title}', date='${session.date}', status='${session.status}', type='${session.type}', handler=${session.handler}, notes='${session.notes}' WHERE id='${session.id}'`
+        `UPDATE sessions SET title='${
+          session.title
+        }', attendees=ARRAY[${session.attendees.join(",")}], date='${
+          session.date
+        }', status='${session.status}', type='${session.type}', handler=${
+          session.handler
+        }, notes='${session.notes}' WHERE id='${session.id}'`
       );
     },
   },

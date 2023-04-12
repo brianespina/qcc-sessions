@@ -21,7 +21,7 @@ const typeDefs = `
     type: String!
     handler: Member
     notes: String!
-    attendees: [SessionMembers]
+    attendees: SessionMembers
   }
 
   type SessionMembers {
@@ -44,7 +44,6 @@ const typeDefs = `
     sessions(status: String): [Session]
     session(id: ID!): Session
     members: [Member]
-    session_members: [SessionMembers]
   }
 
   input SessionInput{
@@ -71,7 +70,7 @@ const resolvers = {
           const sessionMembers = await pool.query(
             `SELECT * FROM session_attendees WHERE session = ${session.id}`
           );
-          return sessionMembers.rows;
+          return sessionMembers.rows[0];
         }
       } catch (error) {}
     },
@@ -81,18 +80,15 @@ const resolvers = {
           const sessionHandler = await pool.query(
             `SELECT * FROM members WHERE id = ${session.handler}`
           );
-          console.log(sessionHandler.rows[0]);
           return sessionHandler.rows[0];
         }
       } catch (error) {}
     },
   },
   SessionMembers: {
-    async members(session_member) {
+    async members(item) {
       const membersResult = await pool.query(`
-          SELECT * FROM members WHERE id IN (${session_member.members.join(
-            ","
-          )})
+          SELECT * FROM members WHERE id IN (${item.members.join(",")})
         `);
       return membersResult.rows;
     },
